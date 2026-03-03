@@ -1,0 +1,195 @@
+import { useState, type FormEvent } from 'react'
+
+const serviceTypes = [
+  'Roof Inspection',
+  'Roof Repair',
+  'Full Replacement',
+  'Emergency Tarping',
+  'Flat Roofing',
+  'Gutter Services',
+  'Other',
+]
+
+export default function Contact() {
+  const [submitted, setSubmitted] = useState(false)
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setSubmitted(true)
+  }
+
+  return (
+    <section
+      id="contact"
+      className="bg-light-bg px-4 py-20 sm:px-6 lg:px-8"
+    >
+      <div className="mx-auto max-w-6xl">
+        <h2 className="mb-4 text-center text-3xl font-bold tracking-tight text-dark sm:text-4xl">
+          Get a Free Estimate
+        </h2>
+        <p className="mx-auto mb-12 max-w-2xl text-center text-lg text-dark-3">
+          Fill out the form below and we'll get back to you within 24 hours.
+        </p>
+        <div className="grid gap-12 lg:grid-cols-3">
+          <div className="lg:col-span-2">
+            {submitted ? (
+              <div className="rounded-xl bg-brand-blue/10 p-8 text-center">
+                <p className="text-xl font-semibold text-brand-blue">
+                  Thank you for your message!
+                </p>
+                <p className="mt-2 text-dark-3">
+                  We'll be in touch within 24 hours.
+                </p>
+              </div>
+            ) : (
+              <form
+                onSubmit={handleSubmit}
+                className="space-y-6 rounded-xl bg-white p-6 shadow-sm sm:p-8"
+              >
+                <div className="grid gap-6 sm:grid-cols-2">
+                  <div>
+                    <label
+                      htmlFor="name"
+                      className="block text-sm font-medium text-dark"
+                    >
+                      Name *
+                    </label>
+                    <input
+                      id="name"
+                      name="name"
+                      type="text"
+                      required
+                      className="mt-1 w-full rounded-lg border border-dark-2/20 px-4 py-3 text-dark focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="email"
+                      className="block text-sm font-medium text-dark"
+                    >
+                      Email *
+                    </label>
+                    <input
+                      id="email"
+                      name="email"
+                      type="email"
+                      required
+                      className="mt-1 w-full rounded-lg border border-dark-2/20 px-4 py-3 text-dark focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
+                    />
+                  </div>
+                </div>
+                <div className="grid gap-6 sm:grid-cols-2">
+                  <div>
+                    <label
+                      htmlFor="phone"
+                      className="block text-sm font-medium text-dark"
+                    >
+                      Phone *
+                    </label>
+                    <input
+                      id="phone"
+                      name="phone"
+                      type="tel"
+                      required
+                      className="mt-1 w-full rounded-lg border border-dark-2/20 px-4 py-3 text-dark focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="service"
+                      className="block text-sm font-medium text-dark"
+                    >
+                      Service Type
+                    </label>
+                    <select
+                      id="service"
+                      name="service"
+                      className="mt-1 w-full rounded-lg border border-dark-2/20 px-4 py-3 text-dark focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
+                    >
+                      {serviceTypes.map((type) => (
+                        <option key={type} value={type}>
+                          {type}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label
+                    htmlFor="address"
+                    className="block text-sm font-medium text-dark"
+                  >
+                    Address
+                  </label>
+                  <input
+                    id="address"
+                    name="address"
+                    type="text"
+                    placeholder="Street, City, Postal Code"
+                    className="mt-1 w-full rounded-lg border border-dark-2/20 px-4 py-3 text-dark focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="message"
+                    className="block text-sm font-medium text-dark"
+                  >
+                    Message *
+                  </label>
+                  <textarea
+                    id="message"
+                    name="message"
+                    rows={4}
+                    required
+                    className="mt-1 w-full rounded-lg border border-dark-2/20 px-4 py-3 text-dark focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="w-full rounded-lg bg-gold px-6 py-4 font-semibold text-dark transition-colors hover:bg-gold-hover sm:w-auto"
+                >
+                  Send Message
+                </button>
+              </form>
+            )}
+          </div>
+          <div className="rounded-xl bg-dark p-6 text-white lg:p-8">
+            <h3 className="mb-6 text-xl font-semibold text-gold">
+              Contact Info
+            </h3>
+            <div className="space-y-6">
+              <div>
+                <p className="text-sm text-white/70">Phone</p>
+                <a
+                  href="tel:+19055551234"
+                  className="text-lg font-medium hover:text-gold"
+                >
+                  (905) 555-1234
+                </a>
+              </div>
+              <div>
+                <p className="text-sm text-white/70">Email</p>
+                <a
+                  href="mailto:info@ryansroofing.ca"
+                  className="text-lg font-medium hover:text-gold"
+                >
+                  info@ryansroofing.ca
+                </a>
+              </div>
+              <div>
+                <p className="text-sm text-white/70">Service Area</p>
+                <p className="text-lg">
+                  Durham Region, Ontario
+                  <br />
+                  <span className="text-sm text-white/80">
+                    Oshawa, Whitby, Ajax, Pickering & surrounding areas
+                  </span>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}

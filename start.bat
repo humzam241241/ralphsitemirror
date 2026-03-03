@@ -1,12 +1,24 @@
 @echo off
-title Ryan's Roofing - Local Development Server
+title Ryan's Roofing - Development Servers
 echo.
 echo ==========================================
-echo   Ryan's Roofing - Starting Local Server
+echo   Ryan's Roofing - Dev Environment
 echo ==========================================
 echo.
-echo Starting server at http://localhost:3000
-echo Press Ctrl+C to stop the server.
+echo Starting backend (FastAPI) on :8000 ...
+echo Starting frontend (Vite)   on :5173 ...
 echo.
-npx serve site -l 3000 --no-clipboard
-pause
+
+start "Backend" cmd /k "cd backend && pip install -r requirements.txt && python -m uvicorn app.main:app --reload --port 8000"
+
+timeout /t 3 /nobreak >nul
+
+start "Frontend" cmd /k "cd frontend && npm install && npm run dev"
+
+echo.
+echo  Backend:  http://localhost:8000
+echo  Frontend: http://localhost:5173
+echo  API Docs: http://localhost:8000/docs
+echo.
+echo Press any key to exit this launcher...
+pause >nul

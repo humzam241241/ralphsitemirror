@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@theme {
+  --color-dark: #1a1a1a;
+  --color-dark-2: #222222;
+  --color-dark-3: #333333;
+  --color-gold: #f8b427;
+  --color-gold-hover: #e5a31e;
+  --color-brand-red: #B82429;
+  --color-brand-blue: #1D5D85;
+  --color-light-bg: #F8F8F8;
+  --color-cream: #fdf1c8;
+
+  --font-heading: 'Poppins', sans-serif;
+  --font-body: 'Montserrat', sans-serif;
+}

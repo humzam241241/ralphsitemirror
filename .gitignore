@@ -1,5 +1,6 @@
 node_modules/
 dist/
+.next/
 .env
 .env.local
 .env.production
@@ -7,27 +8,22 @@ dist/
 .DS_Store
 Thumbs.db
 
-# Python
+# Python (legacy)
 __pycache__/
 *.py[cod]
-*.egg-info/
 .venv/
-venv/
-env/
 
-# ChromaDB
+# ChromaDB / pgvector data
 chroma_data/
 
 # IDE
 .vscode/
 .idea/
 *.swp
-*.swo
 
 # Testing
 coverage/
 .playwright/
-htmlcov/
 .pytest_cache/
 
 # Build

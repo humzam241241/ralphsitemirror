@@ -1,0 +1,22 @@
+{
+  "name": "chatbot-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "pg": "^8.13.0",
+    "openai": "^4.70.0",
+    "axios": "^1.7.0",
+    "cheerio": "^1.0.0",
+    "cors": "^2.8.5",
+    "helmet": "^8.0.0",
+    "hpp": "^0.2.3",
+    "express-rate-limit": "^7.4.0",
+    "dotenv": "^16.4.0",
+    "uuid": "^10.0.0"
+  }
+}

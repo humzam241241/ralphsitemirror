@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chatbot Widget Dev</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, sans-serif;
+        background: #f0f0f0;
+        min-height: 100vh;
+      }
+      .demo-content {
+        max-width: 800px;
+        margin: 40px auto;
+        padding: 20px;
+      }
+      h1 { color: #333; }
+      p { color: #666; line-height: 1.6; }
+    </style>
+  </head>
+  <body>
+    <div class="demo-content">
+      <h1>Customer Website (Demo)</h1>
+      <p>This page simulates a customer's website. The chat widget is loaded via the script tag below and will appear in the bottom-right corner.</p>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+    </div>
+    <script type="module" src="/src/main.tsx" data-site-id="test-site-id" data-api-url="http://localhost:8000/api"></script>
+  </body>
+</html>

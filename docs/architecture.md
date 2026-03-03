@@ -1,131 +1,148 @@
-# Architecture — Ryan's Roofing Platform
+# Architecture — Ryan's Roofing Chatbot Platform
 
 ## System Overview
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                    Client Browser                    │
-│  ┌───────────────────────────────────────────────┐  │
-│  │         React + Vite + TailwindCSS            │  │
-│  │  ┌─────────┐ ┌──────────┐ ┌───────────────┐  │  │
-│  │  │ Website  │ │  Router  │ │ Raffy Widget  │  │  │
-│  │  │ Sections │ │         │ │ (Chat UI)     │  │  │
-│  │  └─────────┘ └──────────┘ └───────┬───────┘  │  │
-│  └────────────────────────────────────┼──────────┘  │
-│                                       │              │
-│                    HTTP / WebSocket    │              │
-└───────────────────────────────────────┼──────────────┘
-                                        │
-┌───────────────────────────────────────┼──────────────┐
-│                  FastAPI Backend      │              │
-│  ┌────────────────────────────────────┼──────────┐  │
-│  │                API Layer           │          │  │
-│  │  ┌──────────┐ ┌──────────┐ ┌──────┴───────┐  │  │
-│  │  │ /health  │ │ /chat    │ │ /ws/chat     │  │  │
-│  │  └──────────┘ └────┬─────┘ └──────┬───────┘  │  │
-│  └─────────────────────┼─────────────┼───────────┘  │
-│                        │             │              │
-│  ┌─────────────────────┼─────────────┼───────────┐  │
-│  │            Service Layer          │           │  │
-│  │  ┌──────────────┐ ┌──────┴───────────────┐   │  │
-│  │  │ IntentClass. │ │    RaffyService      │   │  │
-│  │  │  (spaCy)     │ │  (Claude API)        │   │  │
-│  │  └──────────────┘ └──────────┬────────────┘   │  │
-│  │                              │                │  │
-│  │  ┌───────────────────────────┴────────────┐   │  │
-│  │  │        KnowledgeBaseService            │   │  │
-│  │  │           (ChromaDB)                   │   │  │
-│  │  └────────────────────────────────────────┘   │  │
-│  └───────────────────────────────────────────────┘  │
-│                                                      │
-│  ┌───────────────────────────────────────────────┐  │
-│  │          External Integrations                │  │
-│  │  ┌──────────┐ ┌──────────┐ ┌──────────────┐  │  │
-│  │  │ Cal.com  │ │  SMTP    │ │ Anthropic    │  │  │
-│  │  │ Booking  │ │  Email   │ │ Claude API   │  │  │
-│  │  └──────────┘ └──────────┘ └──────────────┘  │  │
-│  └───────────────────────────────────────────────┘  │
-└──────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                      Customer Browser                       │
+│                                                             │
+│  ┌─────────────────────┐    ┌────────────────────────────┐  │
+│  │  frontend/ (React)  │    │  widget.js (IIFE bundle)   │  │
+│  │  Ryan's Roofing     │    │  Shadow DOM chat widget     │  │
+│  │  website sections   │    │  Reads data-site-id         │  │
+│  │  :5173 / Vercel     │    │  from <script> tag          │  │
+│  └─────────────────────┘    └──────────┬─────────────────┘  │
+│                                        │ HTTP POST          │
+└────────────────────────────────────────┼────────────────────┘
+                                         │
+┌────────────────────────────────────────┼────────────────────┐
+│          backend/ (Express)  :8000     │     Render         │
+│                                        │                    │
+│  ┌─────────────────────────────────────┼─────────────────┐  │
+│  │                 Routes              │                 │  │
+│  │  POST /api/chat ◄───────────────────┘                 │  │
+│  │  POST /api/ingest/:site_id  (admin only)              │  │
+│  │  CRUD /api/sites            (admin only)              │  │
+│  │  GET  /api/site-config/:id  (public)                  │  │
+│  │  POST /api/leads            (public)                  │  │
+│  └───────┬─────────────────────────────┬─────────────────┘  │
+│          │                             │                    │
+│  ┌───────▼───────────┐    ┌────────────▼─────────────┐     │
+│  │ Services          │    │ Middleware               │     │
+│  │                   │    │                          │     │
+│  │ crawler.js        │    │ auth.js (Bearer token)   │     │
+│  │ chunker.js        │    │ domainVerify.js          │     │
+│  │ embeddings.js     │    │ rateLimiter.js           │     │
+│  │ rag.js            │    └──────────────────────────┘     │
+│  └───────┬───────────┘                                      │
+│          │                                                  │
+│  ┌───────▼──────────────────────────────────────────────┐  │
+│  │              External Services                        │  │
+│  │  ┌────────────┐  ┌───────────────────────────────┐   │  │
+│  │  │  OpenAI    │  │  Supabase (Postgres+pgvector) │   │  │
+│  │  │  - embed   │  │  - sites table                │   │  │
+│  │  │  - gpt-4o  │  │  - documents table (vectors)  │   │  │
+│  │  │    mini    │  │  - leads table                │   │  │
+│  │  └────────────┘  └───────────────────────────────┘   │  │
+│  └──────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│          admin/ (Next.js)  :3001      Vercel                │
+│                                                             │
+│  Browser ──► Next.js Server Routes ──► Backend API          │
+│              (injects ADMIN_SECRET)                          │
+│                                                             │
+│  Pages: Dashboard, Sites CRUD, Ingest trigger, Leads view   │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-## Frontend Architecture
+## Directory Layout
 
 ```
-frontend/
-├── public/                  # Static assets
-├── src/
-│   ├── components/
-│   │   ├── layout/          # Navbar, Footer
-│   │   ├── sections/        # Hero, About, Services, FAQ, Testimonials, Contact
-│   │   └── raffy/           # RaffyWidget, ChatPanel, ChatMessage
-│   ├── pages/               # HomePage (composes sections)
-│   ├── hooks/               # useChat (state management)
-│   ├── utils/               # API client utilities
-│   ├── assets/              # Images, fonts
-│   ├── App.tsx              # Root with Router
-│   ├── main.tsx             # Entry point
-│   └── index.css            # Tailwind theme config
-├── index.html
-├── vite.config.ts           # Vite + Tailwind + API proxy
-├── tsconfig.json
-└── package.json
+├── backend/                    # Node.js + Express (→ Render)
+│   ├── src/
+│   │   ├── index.js            # App entry, middleware, route mounting
+│   │   ├── config/database.js  # Supabase pg Pool
+│   │   ├── middleware/
+│   │   │   ├── auth.js         # Bearer token admin check
+│   │   │   ├── domainVerify.js # Origin vs site domain
+│   │   │   └── rateLimiter.js  # Chat rate limiting
+│   │   ├── services/
+│   │   │   ├── crawler.js      # axios + cheerio BFS crawler
+│   │   │   ├── chunker.js      # Text → ~600 token chunks
+│   │   │   ├── embeddings.js   # OpenAI text-embedding-3-small
+│   │   │   └── rag.js          # Retrieval + prompt + gpt-4o-mini
+│   │   └── routes/
+│   │       ├── chat.js         # POST /api/chat
+│   │       ├── ingest.js       # POST /api/ingest/:site_id
+│   │       ├── sites.js        # CRUD /api/sites
+│   │       ├── siteConfig.js   # GET /api/site-config/:site_id
+│   │       └── leads.js        # POST+GET /api/leads
+│   ├── schema.sql              # Supabase DDL (run once)
+│   └── package.json
+│
+├── frontend/                   # React + Vite + TailwindCSS (→ Vercel)
+│   └── src/
+│       ├── components/
+│       │   ├── layout/         # Navbar, Footer
+│       │   ├── sections/       # Hero, About, Services, FAQ, etc.
+│       │   └── raffy/          # Original Raffy UI components
+│       ├── pages/HomePage.tsx
+│       ├── hooks/useChat.ts
+│       └── utils/api.ts
+│
+├── widget/                     # Embeddable IIFE bundle (→ Vercel static)
+│   └── src/
+│       ├── main.tsx            # Shadow DOM mount, reads script attrs
+│       ├── components/         # ChatBubble, ChatWindow, LeadForm, etc.
+│       ├── hooks/useChat.ts    # Chat state + API calls
+│       └── styles.ts           # CSS-in-JS for Shadow DOM
+│
+├── admin/                      # Next.js dashboard (→ Vercel)
+│   └── src/
+│       ├── app/                # Pages + API proxy routes
+│       └── lib/api.ts          # Server-side fetch with ADMIN_SECRET
+│
+└── docs/                       # Product vision, architecture
 ```
 
-## Backend Architecture
+## Data Flow — Chat (RAG)
 
+1. User types in widget → `POST /api/chat { site_id, user_message }`
+2. Backend embeds query → `text-embedding-3-small`
+3. pgvector cosine search → top 5 chunks WHERE `site_id` matches
+4. System prompt built from site config + retrieved context
+5. `gpt-4o-mini` (temp 0.3) generates answer
+6. If user asks about pricing/booking → `should_capture_lead: true`
+7. Widget shows lead form if flagged
+
+## Data Flow — Ingestion
+
+1. Admin triggers `POST /api/ingest/:site_id`
+2. Old docs for site_id deleted
+3. Crawler BFS from site domain (max 20 pages, 500KB/page)
+4. Chunker splits text (~600 tokens/chunk, max 500 chunks/site)
+5. Embeddings batch (50 at a time) via OpenAI
+6. INSERT rows into `documents` with pgvector embedding
+
+## Multi-Tenancy
+
+All DB tables keyed on `site_id`:
+```sql
+SELECT content FROM documents
+WHERE site_id = $1
+ORDER BY embedding <=> $2::vector
+LIMIT 5;
 ```
-backend/
-├── app/
-│   ├── main.py              # FastAPI app, CORS, WebSocket
-│   ├── config.py            # Pydantic Settings (.env)
-│   ├── routers/
-│   │   ├── health.py        # GET /api/health
-│   │   └── chat.py          # POST /api/chat
-│   ├── services/
-│   │   ├── raffy.py         # LLM orchestration (Claude)
-│   │   └── knowledge_base.py # ChromaDB vector search
-│   ├── models/
-│   │   └── schemas.py       # Pydantic request/response models
-│   └── utils/
-│       └── intent_classifier.py  # spaCy intent detection
-├── tests/
-│   └── test_health.py       # API tests
-├── knowledge/               # Knowledge base source documents
-├── requirements.txt
-└── .env.example
-```
 
-## Data Flow — Chat Request
+## Key Security Decisions
 
-1. User types message in Raffy chat widget
-2. Frontend sends POST `/api/chat` (or via WebSocket)
-3. `IntentClassifier` categorizes: book / quote / emergency / general
-4. `KnowledgeBaseService` retrieves relevant context from ChromaDB
-5. `RaffyService` constructs prompt with system prompt + context + user message
-6. Claude API generates response
-7. Response + intent + suggestions returned to frontend
-8. If intent is "book" → trigger Cal.com booking flow
-9. If intent is "emergency" → show emergency CTA prominently
-
-## Key Design Decisions
-
-| Decision | Rationale |
-|----------|-----------|
-| Monorepo (frontend + backend) | Simpler CI/CD, shared types later |
-| FastAPI over Express | Python ecosystem for NLP (spaCy, ChromaDB) |
-| ChromaDB over Pinecone | Self-hosted, no vendor lock-in, free |
-| Claude over GPT | Better instruction following for chat personas |
-| WebSocket for chat | Real-time streaming responses |
-| TailwindCSS v4 | Zero-config, fast builds, utility-first |
-| Rate limiting (20/session) | Prevent abuse, control API costs |
-
-## Environment Variables
-
-| Variable | Purpose |
-|----------|---------|
-| `ANTHROPIC_API_KEY` | Claude API access |
-| `CHROMA_PERSIST_DIR` | ChromaDB storage path |
-| `CORS_ORIGINS` | Allowed frontend origins |
-| `SMTP_HOST/PORT/USER/PASSWORD` | Email notification sending |
-| `CAL_COM_API_KEY` | Booking integration |
-| `VITE_API_URL` | Frontend API base URL |
+| Layer | Mechanism |
+|-------|-----------|
+| Admin API | Bearer token (`ADMIN_SECRET`) via middleware |
+| Admin Dashboard | Next.js server routes inject token; browser never sees it |
+| Widget Chat | Domain verification (prod): Origin must match `sites.domain` |
+| Rate Limiting | 100 req/15min global, 30 req/min on chat |
+| RAG Guardrails | Strict system prompt: only answer from context |
+| Secrets | `.env` files in `.gitignore`, no secrets in client code |

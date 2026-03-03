@@ -1,0 +1,1 @@
+import{_ as s,a as o,b as t,aq as a}from"./hbAbsX1X.js";const n={},r={class:"short-label"};function c(e,l){return t(),o("span",r,[a(e.$slots,"default")])}const m=Object.assign(s(n,[["render",c]]),{__name:"PreviewElementsCommonShortLabel"});export{m as S};

@@ -1,0 +1,1 @@
+import{d as n,a5 as o,u as l,bP as r,a as u,b as c,e as s,n as m,f as d,aq as p,F as f}from"./hbAbsX1X.js";const b=n({__name:"page",setup(g){const{locale:a}=o();l({htmlAttrs:{lang:a}});const e=r()?.backgroundSettingsClass;return(t,_)=>(c(),u(f,null,[s("div",{class:m(["bg-fixed",d(e)])},null,2),s("div",null,[p(t.$slots,"default")])],64))}});export{b as default};

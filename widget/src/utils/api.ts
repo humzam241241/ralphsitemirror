@@ -9,6 +9,7 @@ export interface SiteConfig {
 export interface ChatResponse {
   reply: string;
   should_capture_lead: boolean;
+  intent?: string;
 }
 
 export interface LeadData {

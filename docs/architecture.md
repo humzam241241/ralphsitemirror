@@ -1,148 +1,268 @@
-# Architecture — Ryan's Roofing Chatbot Platform
+# Architecture Overview
 
-## System Overview
+Complete technical architecture for the Ryan's Roofing AI Chatbot Platform.
+
+## System Components
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                      Customer Browser                       │
-│                                                             │
-│  ┌─────────────────────┐    ┌────────────────────────────┐  │
-│  │  frontend/ (React)  │    │  widget.js (IIFE bundle)   │  │
-│  │  Ryan's Roofing     │    │  Shadow DOM chat widget     │  │
-│  │  website sections   │    │  Reads data-site-id         │  │
-│  │  :5173 / Vercel     │    │  from <script> tag          │  │
-│  └─────────────────────┘    └──────────┬─────────────────┘  │
-│                                        │ HTTP POST          │
-└────────────────────────────────────────┼────────────────────┘
-                                         │
-┌────────────────────────────────────────┼────────────────────┐
-│          backend/ (Express)  :8000     │     Render         │
-│                                        │                    │
-│  ┌─────────────────────────────────────┼─────────────────┐  │
-│  │                 Routes              │                 │  │
-│  │  POST /api/chat ◄───────────────────┘                 │  │
-│  │  POST /api/ingest/:site_id  (admin only)              │  │
-│  │  CRUD /api/sites            (admin only)              │  │
-│  │  GET  /api/site-config/:id  (public)                  │  │
-│  │  POST /api/leads            (public)                  │  │
-│  └───────┬─────────────────────────────┬─────────────────┘  │
-│          │                             │                    │
-│  ┌───────▼───────────┐    ┌────────────▼─────────────┐     │
-│  │ Services          │    │ Middleware               │     │
-│  │                   │    │                          │     │
-│  │ crawler.js        │    │ auth.js (Bearer token)   │     │
-│  │ chunker.js        │    │ domainVerify.js          │     │
-│  │ embeddings.js     │    │ rateLimiter.js           │     │
-│  │ rag.js            │    └──────────────────────────┘     │
-│  └───────┬───────────┘                                      │
-│          │                                                  │
-│  ┌───────▼──────────────────────────────────────────────┐  │
-│  │              External Services                        │  │
-│  │  ┌────────────┐  ┌───────────────────────────────┐   │  │
-│  │  │  OpenAI    │  │  Supabase (Postgres+pgvector) │   │  │
-│  │  │  - embed   │  │  - sites table                │   │  │
-│  │  │  - gpt-4o  │  │  - documents table (vectors)  │   │  │
-│  │  │    mini    │  │  - leads table                │   │  │
-│  │  └────────────┘  └───────────────────────────────┘   │  │
-│  └──────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
+│                      Customer Browser                        │
+│                                                              │
+│  ┌─────────────────┐         ┌──────────────────────────┐   │
+│  │ Frontend        │         │ Widget (IIFE)            │   │
+│  │ React + Vite    │         │ Shadow DOM Chat          │   │
+│  │ :5173           │         │ Reads data-site-id       │   │
+│  └─────────────────┘         └──────────┬───────────────┘   │
+│                                         │                    │
+└─────────────────────────────────────────┼────────────────────┘
+                                          │ POST /api/chat
+                                          │
+┌─────────────────────────────────────────┼────────────────────┐
+│              Backend (Express) :8000    │     Render         │
+│                                         │                    │
+│  Routes:                                │                    │
+│  • POST /api/chat            ← RAG chat responses           │
+│  • POST /api/contact         ← Contact form submissions     │
+│  • POST /api/bookings        ← Appointment scheduling       │
+│  • POST /api/leads           ← Lead capture                 │
+│  • POST /api/ingest/:site_id ← Content crawling (admin)     │
+│  • CRUD /api/sites           ← Site management (admin)      │
+│                                                              │
+│  Services:                                                   │
+│  • email.js          → Gmail SMTP notifications             │
+│  • calendar.js       → Cal.com API integration              │
+│  • rag.js            → Retrieval + AI + intent detection    │
+│  • crawler.js        → Website content scraping             │
+│  • embeddings.js     → OpenAI text-embedding-3-small        │
+│                                                              │
+│  Middleware:                                                 │
+│  • auth.js           → Bearer token verification            │
+│  • sanitize.js       → Input validation & XSS prevention    │
+│  • rateLimiter.js    → Request throttling                   │
+│                                                              │
+│  External Services:                                          │
+│  • OpenAI            → Embeddings + GPT-4o-mini             │
+│  • Supabase          → PostgreSQL + pgvector                │
+│  • Gmail SMTP        → Email notifications                  │
+│  • Cal.com API       → Booking integration                  │
+└──────────────────────────────────────────────────────────────┘
 
-┌─────────────────────────────────────────────────────────────┐
-│          admin/ (Next.js)  :3001      Vercel                │
-│                                                             │
-│  Browser ──► Next.js Server Routes ──► Backend API          │
-│              (injects ADMIN_SECRET)                          │
-│                                                             │
-│  Pages: Dashboard, Sites CRUD, Ingest trigger, Leads view   │
-└─────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│           Admin Dashboard (Next.js) :3001    Vercel          │
+│                                                              │
+│  • Manage sites (CRUD)                                       │
+│  • Trigger content ingestion                                 │
+│  • View leads and bookings                                   │
+│  • Configure branding and AI behavior                        │
+└──────────────────────────────────────────────────────────────┘
 ```
 
-## Directory Layout
+## Data Flow: Chat with RAG
 
-```
-├── backend/                    # Node.js + Express (→ Render)
-│   ├── src/
-│   │   ├── index.js            # App entry, middleware, route mounting
-│   │   ├── config/database.js  # Supabase pg Pool
-│   │   ├── middleware/
-│   │   │   ├── auth.js         # Bearer token admin check
-│   │   │   ├── domainVerify.js # Origin vs site domain
-│   │   │   └── rateLimiter.js  # Chat rate limiting
-│   │   ├── services/
-│   │   │   ├── crawler.js      # axios + cheerio BFS crawler
-│   │   │   ├── chunker.js      # Text → ~600 token chunks
-│   │   │   ├── embeddings.js   # OpenAI text-embedding-3-small
-│   │   │   └── rag.js          # Retrieval + prompt + gpt-4o-mini
-│   │   └── routes/
-│   │       ├── chat.js         # POST /api/chat
-│   │       ├── ingest.js       # POST /api/ingest/:site_id
-│   │       ├── sites.js        # CRUD /api/sites
-│   │       ├── siteConfig.js   # GET /api/site-config/:site_id
-│   │       └── leads.js        # POST+GET /api/leads
-│   ├── schema.sql              # Supabase DDL (run once)
-│   └── package.json
-│
-├── frontend/                   # React + Vite + TailwindCSS (→ Vercel)
-│   └── src/
-│       ├── components/
-│       │   ├── layout/         # Navbar, Footer
-│       │   ├── sections/       # Hero, About, Services, FAQ, etc.
-│       │   └── raffy/          # Original Raffy UI components
-│       ├── pages/HomePage.tsx
-│       ├── hooks/useChat.ts
-│       └── utils/api.ts
-│
-├── widget/                     # Embeddable IIFE bundle (→ Vercel static)
-│   └── src/
-│       ├── main.tsx            # Shadow DOM mount, reads script attrs
-│       ├── components/         # ChatBubble, ChatWindow, LeadForm, etc.
-│       ├── hooks/useChat.ts    # Chat state + API calls
-│       └── styles.ts           # CSS-in-JS for Shadow DOM
-│
-├── admin/                      # Next.js dashboard (→ Vercel)
-│   └── src/
-│       ├── app/                # Pages + API proxy routes
-│       └── lib/api.ts          # Server-side fetch with ADMIN_SECRET
-│
-└── docs/                       # Product vision, architecture
-```
+1. **User sends message** → Widget POSTs to `/api/chat` with `site_id` and `user_message`
+2. **Intent detection** → Regex patterns detect booking/quote/emergency intent
+3. **Query embedding** → OpenAI `text-embedding-3-small` converts message to vector
+4. **Vector search** → pgvector finds top 5 relevant chunks: `WHERE site_id = $1 ORDER BY embedding <=> query_vector`
+5. **Context building** → Retrieved chunks + site config form system prompt
+6. **AI generation** → `gpt-4o-mini` (temp 0.3) generates response
+7. **Intent handling**:
+   - **Booking**: Returns `intent: 'booking'` → Widget shows booking modal
+   - **Quote**: Returns `intent: 'quote'` → Widget shows lead form
+   - **Emergency**: Returns `intent: 'emergency'` → Widget shows phone CTA
+8. **Lead capture** → If form submitted, stored in database + email notifications sent
 
-## Data Flow — Chat (RAG)
+## Data Flow: Content Ingestion
 
-1. User types in widget → `POST /api/chat { site_id, user_message }`
-2. Backend embeds query → `text-embedding-3-small`
-3. pgvector cosine search → top 5 chunks WHERE `site_id` matches
-4. System prompt built from site config + retrieved context
-5. `gpt-4o-mini` (temp 0.3) generates answer
-6. If user asks about pricing/booking → `should_capture_lead: true`
-7. Widget shows lead form if flagged
+1. **Admin triggers** → `POST /api/ingest/:site_id` with auth token
+2. **Cleanup** → Delete old documents for site_id
+3. **Crawl** → BFS traversal from site domain (max 20 pages, 500KB each)
+4. **Chunk** → Split text into ~600 token chunks (max 500 chunks per site)
+5. **Embed** → Batch process with OpenAI (50 chunks at a time)
+6. **Store** → INSERT into `documents` table with pgvector embeddings
 
-## Data Flow — Ingestion
+## Database Schema
 
-1. Admin triggers `POST /api/ingest/:site_id`
-2. Old docs for site_id deleted
-3. Crawler BFS from site domain (max 20 pages, 500KB/page)
-4. Chunker splits text (~600 tokens/chunk, max 500 chunks/site)
-5. Embeddings batch (50 at a time) via OpenAI
-6. INSERT rows into `documents` with pgvector embedding
+### Core Tables
 
-## Multi-Tenancy
-
-All DB tables keyed on `site_id`:
 ```sql
-SELECT content FROM documents
+-- Multi-tenant site configuration
+CREATE TABLE sites (
+  id UUID PRIMARY KEY,
+  company_name TEXT NOT NULL,
+  domain TEXT NOT NULL,
+  primary_color TEXT DEFAULT '#f8b427',
+  tone TEXT DEFAULT 'friendly and professional',
+  custom_prompt TEXT,
+  welcome_message TEXT,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Vector-indexed content chunks
+CREATE TABLE documents (
+  id UUID PRIMARY KEY,
+  site_id UUID REFERENCES sites(id) ON DELETE CASCADE,
+  url TEXT,
+  content TEXT NOT NULL,
+  embedding vector(1536),  -- OpenAI text-embedding-3-small
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX ON documents USING ivfflat (embedding vector_cosine_ops);
+CREATE INDEX idx_documents_site_id ON documents(site_id);
+
+-- Lead capture with source tracking
+CREATE TABLE leads (
+  id UUID PRIMARY KEY,
+  site_id UUID REFERENCES sites(id) ON DELETE CASCADE,
+  name TEXT,
+  email TEXT,
+  phone TEXT,
+  message TEXT,
+  page_url TEXT,
+  source VARCHAR(50) DEFAULT 'chat',  -- chat, contact_form, booking, widget
+  intent VARCHAR(50),                  -- booking, quote, emergency, general
+  booking_reference VARCHAR(255),
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Appointment bookings
+CREATE TABLE bookings (
+  id UUID PRIMARY KEY,
+  site_id UUID REFERENCES sites(id) ON DELETE CASCADE,
+  lead_id UUID REFERENCES leads(id) ON DELETE SET NULL,
+  cal_com_booking_id VARCHAR(255),
+  attendee_name VARCHAR(255) NOT NULL,
+  attendee_email VARCHAR(255) NOT NULL,
+  attendee_phone VARCHAR(50),
+  scheduled_time TIMESTAMPTZ NOT NULL,
+  service_type VARCHAR(100) DEFAULT 'Roof Inspection',
+  notes TEXT,
+  status VARCHAR(50) DEFAULT 'confirmed',
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+```
+
+## Multi-Tenancy Strategy
+
+All database operations are scoped by `site_id`:
+
+```sql
+-- Vector search always filtered by tenant
+SELECT content, url 
+FROM documents
 WHERE site_id = $1
 ORDER BY embedding <=> $2::vector
 LIMIT 5;
+
+-- Lead retrieval scoped to site
+SELECT * FROM leads 
+WHERE site_id = $1 
+ORDER BY created_at DESC;
 ```
 
-## Key Security Decisions
+**Isolation guarantees**:
+- Widget only knows its own `site_id` (from script tag)
+- Database queries always include `site_id` filter
+- Admin dashboard can view all sites but requires authentication
 
-| Layer | Mechanism |
+## Security Architecture
+
+| Layer | Protection |
 |-------|-----------|
-| Admin API | Bearer token (`ADMIN_SECRET`) via middleware |
-| Admin Dashboard | Next.js server routes inject token; browser never sees it |
-| Widget Chat | Domain verification (prod): Origin must match `sites.domain` |
-| Rate Limiting | 100 req/15min global, 30 req/min on chat |
-| RAG Guardrails | Strict system prompt: only answer from context |
-| Secrets | `.env` files in `.gitignore`, no secrets in client code |
+| **Admin API** | Bearer token (`ADMIN_SECRET`) verified in middleware |
+| **Widget Chat** | Domain verification: Origin must match `sites.domain` (production) |
+| **Rate Limiting** | Global: 100/15min, Chat: 30/min, Contact: 5/hour, Booking: 3/hour |
+| **Input Sanitization** | XSS prevention via `validator.escape()` on all user inputs |
+| **CORS** | Whitelist via `ALLOWED_ORIGINS` env var |
+| **Secrets** | All credentials in `.env` files (gitignored) |
+| **RAG Guardrails** | System prompt enforces "only answer from context" |
+
+## Technology Stack
+
+| Component | Technology | Hosting |
+|-----------|-----------|---------|
+| **Backend** | Node.js 18 + Express | Render |
+| **Database** | PostgreSQL 15 + pgvector | Supabase |
+| **AI/ML** | OpenAI API (embeddings + chat) | OpenAI Cloud |
+| **Email** | Nodemailer + Gmail SMTP | Gmail |
+| **Booking** | Cal.com API | Cal.com Cloud |
+| **Frontend** | React 19 + Vite + TailwindCSS | Vercel |
+| **Widget** | React 19 (IIFE + Shadow DOM) | Vercel |
+| **Admin** | Next.js 15 + React 19 | Vercel |
+| **Testing** | Playwright + Lighthouse CI | Local/CI |
+
+## Performance Optimizations
+
+### Frontend
+- Code splitting: vendor and Cal.com chunks separate
+- Terser minification with console removal
+- Lazy loading for below-fold content
+- Brotli compression in production
+
+### Widget
+- Single IIFE bundle (<200KB target)
+- Shadow DOM for style isolation
+- Minimal dependencies (React only)
+- CSS-in-JS for no external stylesheets
+
+### Backend
+- Connection pooling for database
+- Batch embedding generation (50 at a time)
+- Rate limiting prevents abuse
+- Vector index (IVFFlat) for fast similarity search
+
+### Database
+- pgvector with cosine similarity index
+- Query optimization: `LIMIT 5` on vector search
+- Indexes on foreign keys and timestamps
+
+## Monitoring & Observability
+
+- **Logs**: Winston logger in backend (error.log, combined.log)
+- **Metrics**: Track chat requests, lead submissions, booking creations
+- **Errors**: Console logging with context (site_id, timestamps)
+- **Performance**: Lighthouse CI scores tracked in CI/CD
+
+## Deployment Architecture
+
+```
+GitHub Repository
+       │
+       ├──► Render (Backend)
+       │    • Automatic deploys on push to main
+       │    • Environment variables in dashboard
+       │    • Health check: GET /api/health
+       │
+       ├──► Vercel (Frontend)
+       │    • Root: frontend/
+       │    • Build: npm run build
+       │    • Output: dist/
+       │
+       ├──► Vercel (Widget)
+       │    • Root: widget/
+       │    • Build: npm run build
+       │    • Output: dist/
+       │
+       └──► Vercel (Admin)
+            • Root: admin/
+            • Build: npm run build
+            • Output: .next/
+```
+
+## Scalability Considerations
+
+- **Multi-tenant**: Single backend serves unlimited sites
+- **Database**: Supabase auto-scales, upgrade to Pro for >500MB
+- **OpenAI**: Rate limits at 60 req/min (tier 1), can upgrade
+- **Render**: Can scale to multiple instances if needed
+- **Vercel**: Serverless functions scale automatically
+
+## Future Enhancements
+
+- [ ] Redis caching for frequent queries
+- [ ] WebSocket for real-time chat updates
+- [ ] Analytics dashboard for conversation insights
+- [ ] A/B testing framework for AI responses
+- [ ] Multi-language support
+- [ ] Voice input/output integration
+- [ ] Mobile app wrappers (React Native)

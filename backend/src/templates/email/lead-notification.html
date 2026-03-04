@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New Lead Notification</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+  <table role="presentation" style="width: 100%; border-collapse: collapse;">
+    <tr>
+      <td align="center" style="padding: 40px 0;">
+        <table role="presentation" style="width: 600px; border-collapse: collapse; background-color: #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+          
+          <!-- Header -->
+          <tr>
+            <td style="padding: 30px; background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); text-align: center;">
+              <h1 style="margin: 0; color: #ffffff; font-size: 28px;">🔔 New Lead</h1>
+              <p style="margin: 10px 0 0; color: #e0e7ff; font-size: 14px;">Ryan's Roofing Chatbot</p>
+            </td>
+          </tr>
+
+          <!-- Content -->
+          <tr>
+            <td style="padding: 40px 30px;">
+              
+              <!-- Lead Info -->
+              <h2 style="margin: 0 0 20px; color: #1e293b; font-size: 20px;">Lead Information</h2>
+              
+              <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                <tr>
+                  <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; color: #64748b; font-weight: bold; width: 140px;">Name:</td>
+                  <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; color: #1e293b;">{{name}}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; color: #64748b; font-weight: bold;">Email:</td>
+                  <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; color: #1e293b;">
+                    <a href="mailto:{{email}}" style="color: #3b82f6; text-decoration: none;">{{email}}</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; color: #64748b; font-weight: bold;">Phone:</td>
+                  <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; color: #1e293b;">
+                    <a href="tel:{{phone}}" style="color: #3b82f6; text-decoration: none;">{{phone}}</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; color: #64748b; font-weight: bold;">Intent:</td>
+                  <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">
+                    <span style="background-color: #dbeafe; color: #1e40af; padding: 4px 12px; border-radius: 12px; font-size: 13px; font-weight: 600;">{{intent}}</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; color: #64748b; font-weight: bold;">Source:</td>
+                  <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; color: #1e293b;">{{source}}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px; color: #64748b; font-weight: bold;">Timestamp:</td>
+                  <td style="padding: 12px; color: #1e293b;">{{timestamp}}</td>
+                </tr>
+              </table>
+
+              <!-- Message -->
+              <h3 style="margin: 30px 0 15px; color: #1e293b; font-size: 18px;">Message</h3>
+              <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; border-left: 4px solid #3b82f6;">
+                <p style="margin: 0; color: #334155; line-height: 1.6; white-space: pre-wrap;">{{message}}</p>
+              </div>
+
+              <!-- CTA -->
+              <div style="text-align: center; margin-top: 40px;">
+                <a href="mailto:{{email}}" style="display: inline-block; background-color: #3b82f6; color: #ffffff; padding: 14px 32px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">Reply to Lead</a>
+              </div>
+
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding: 20px 30px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; text-align: center;">
+              <p style="margin: 0; color: #64748b; font-size: 12px;">
+                Ryan's Roofing - AI-Powered Lead Capture<br>
+                This is an automated notification from your chatbot
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

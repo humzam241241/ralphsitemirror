@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import CalendarEmbed from './CalendarEmbed'
 
 const serviceTypes = [
   'Roof Inspection',
@@ -10,12 +11,46 @@ const serviceTypes = [
   'Other',
 ]
 
+const API_URL = import.meta.env.VITE_API_URL || 'https://ralphsitemirror.onrender.com'
+
 export default function Contact() {
   const [submitted, setSubmitted] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    setSubmitted(true)
+    setLoading(true)
+    setError(null)
+
+    const formData = new FormData(e.currentTarget)
+    const data = {
+      name: formData.get('name'),
+      email: formData.get('email'),
+      phone: formData.get('phone'),
+      service: formData.get('service'),
+      message: `${formData.get('message')}\n\nAddress: ${formData.get('address') || 'Not provided'}`,
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/api/contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to send message')
+      }
+
+      setSubmitted(true)
+    } catch (err) {
+      console.error('Contact form error:', err)
+      setError(err instanceof Error ? err.message : 'Failed to send message. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -27,9 +62,12 @@ export default function Contact() {
         <h2 className="mb-4 text-center text-3xl font-bold tracking-tight text-dark sm:text-4xl">
           Get a Free Estimate
         </h2>
-        <p className="mx-auto mb-12 max-w-2xl text-center text-lg text-dark-3">
+        <p className="mx-auto mb-8 max-w-2xl text-center text-lg text-dark-3">
           Fill out the form below and we'll get back to you within 24 hours.
         </p>
+        <div className="mb-12 text-center">
+          <CalendarEmbed />
+        </div>
         <div className="grid gap-12 lg:grid-cols-3">
           <div className="lg:col-span-2">
             {submitted ? (
@@ -40,12 +78,30 @@ export default function Contact() {
                 <p className="mt-2 text-dark-3">
                   We'll be in touch within 24 hours.
                 </p>
+                <button
+                  onClick={() => setSubmitted(false)}
+                  className="mt-4 text-sm text-brand-blue hover:underline"
+                >
+                  Send another message
+                </button>
               </div>
             ) : (
-              <form
-                onSubmit={handleSubmit}
-                className="space-y-6 rounded-xl bg-white p-6 shadow-sm sm:p-8"
-              >
+              <>
+                {error && (
+                  <div className="mb-6 rounded-lg bg-red-50 p-4 text-red-800">
+                    <p className="font-medium">Error: {error}</p>
+                    <p className="mt-1 text-sm">
+                      You can also call us directly at{' '}
+                      <a href="tel:+19055551234" className="font-semibold underline">
+                        (905) 555-1234
+                      </a>
+                    </p>
+                  </div>
+                )}
+                <form
+                  onSubmit={handleSubmit}
+                  className="space-y-6 rounded-xl bg-white p-6 shadow-sm sm:p-8"
+                >
                 <div className="grid gap-6 sm:grid-cols-2">
                   <div>
                     <label
@@ -146,11 +202,13 @@ export default function Contact() {
                 </div>
                 <button
                   type="submit"
-                  className="w-full rounded-lg bg-gold px-6 py-4 font-semibold text-dark transition-colors hover:bg-gold-hover sm:w-auto"
+                  disabled={loading}
+                  className="w-full rounded-lg bg-gold px-6 py-4 font-semibold text-dark transition-colors hover:bg-gold-hover disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto"
                 >
-                  Send Message
+                  {loading ? 'Sending...' : 'Send Message'}
                 </button>
               </form>
+              </>
             )}
           </div>
           <div className="rounded-xl bg-dark p-6 text-white lg:p-8">

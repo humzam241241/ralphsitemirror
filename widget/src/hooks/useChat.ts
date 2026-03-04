@@ -13,7 +13,10 @@ interface UseChatReturn {
   loading: boolean;
   sendMessage: (text: string) => Promise<void>;
   shouldShowLeadForm: boolean;
+  shouldShowBookingModal: boolean;
+  shouldShowEmergencyCTA: boolean;
   dismissLeadForm: () => void;
+  dismissBookingModal: () => void;
   addBotMessage: (text: string) => void;
 }
 
@@ -26,6 +29,8 @@ export function useChat(apiUrl: string, siteId: string): UseChatReturn {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const [shouldShowLeadForm, setShouldShowLeadForm] = useState(false);
+  const [shouldShowBookingModal, setShouldShowBookingModal] = useState(false);
+  const [shouldShowEmergencyCTA, setShouldShowEmergencyCTA] = useState(false);
 
   const addBotMessage = useCallback((text: string) => {
     setMessages((prev) => [
@@ -64,7 +69,14 @@ export function useChat(apiUrl: string, siteId: string): UseChatReturn {
         };
         setMessages((prev) => [...prev, botMsg]);
 
-        if (data.should_capture_lead) {
+        if (data.intent === 'booking') {
+          setShouldShowBookingModal(true);
+        } else if (data.intent === 'emergency') {
+          setShouldShowEmergencyCTA(true);
+          setTimeout(() => setShouldShowEmergencyCTA(false), 15000);
+        } else if (data.intent === 'quote') {
+          setShouldShowLeadForm(true);
+        } else if (data.should_capture_lead) {
           setShouldShowLeadForm(true);
         }
       } catch {
@@ -86,12 +98,19 @@ export function useChat(apiUrl: string, siteId: string): UseChatReturn {
     setShouldShowLeadForm(false);
   }, []);
 
+  const dismissBookingModal = useCallback(() => {
+    setShouldShowBookingModal(false);
+  }, []);
+
   return {
     messages,
     loading,
     sendMessage,
     shouldShowLeadForm,
+    shouldShowBookingModal,
+    shouldShowEmergencyCTA,
     dismissLeadForm,
+    dismissBookingModal,
     addBotMessage,
   };
 }

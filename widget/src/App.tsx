@@ -25,7 +25,10 @@ export const App: React.FC<AppProps> = ({ siteId, apiUrl }) => {
     loading,
     sendMessage,
     shouldShowLeadForm,
+    shouldShowBookingModal,
+    shouldShowEmergencyCTA,
     dismissLeadForm,
+    dismissBookingModal,
     addBotMessage,
   } = useChat(apiUrl, siteId);
 
@@ -62,11 +65,14 @@ export const App: React.FC<AppProps> = ({ siteId, apiUrl }) => {
           loading={loading}
           quickReplies={config.quick_replies}
           showLeadForm={shouldShowLeadForm}
+          showBookingModal={shouldShowBookingModal}
+          showEmergencyCTA={shouldShowEmergencyCTA}
           apiUrl={apiUrl}
           siteId={siteId}
           onSend={sendMessage}
           onClose={handleClose}
           onDismissLeadForm={dismissLeadForm}
+          onDismissBookingModal={dismissBookingModal}
         />
       ) : null}
       <ChatBubble primaryColor={config.primary_color} onClick={handleOpen} />

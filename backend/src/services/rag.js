@@ -4,6 +4,25 @@ import { embedText, toPgVector } from './embeddings.js';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
+const intentPatterns = {
+  booking: /\b(book|schedule|appointment|inspection|visit|come out|set up)\b/i,
+  quote: /\b(price|cost|quote|estimate|how much|pricing)\b/i,
+  emergency: /\b(emergency|urgent|leak|storm damage|asap|right now|immediately)\b/i,
+};
+
+function detectIntent(message) {
+  if (intentPatterns.emergency.test(message)) {
+    return 'emergency';
+  }
+  if (intentPatterns.booking.test(message)) {
+    return 'booking';
+  }
+  if (intentPatterns.quote.test(message)) {
+    return 'quote';
+  }
+  return null;
+}
+
 export async function chatWithRAG(siteId, userMessage, siteConfig) {
   const queryEmbedding = await embedText(userMessage);
   const vectorLiteral = toPgVector(queryEmbedding);
@@ -34,7 +53,9 @@ STRICT RULES:
 - Be concise and helpful. Use the same language as the user's question.
 - When citing information, reference the source naturally (e.g., "According to our website...").
 - Never reveal that you are reading from indexed documents or embeddings.
-- If the user asks about pricing, booking, scheduling, or wants to contact someone, include a note that they can share their contact details so the team can follow up.
+- If the user asks about emergency services, emphasize the urgency and direct them to call immediately.
+- If the user asks about booking or scheduling, be enthusiastic and mention they can schedule online or provide their details.
+- If the user asks about pricing or quotes, offer to have someone provide a detailed estimate after reviewing their specific needs.
 
 CONTEXT:
 ${contextBlock || 'No relevant context found.'}`;
@@ -52,6 +73,8 @@ ${contextBlock || 'No relevant context found.'}`;
   const answer = completion.choices[0]?.message?.content || 'Sorry, I could not generate a response.';
   const sources = [...new Set(docs.map((d) => d.url))];
 
+  const intent = detectIntent(userMessage);
+  
   const leadTriggers = /\b(pricing|price|cost|book|schedule|appointment|contact|quote|demo|call|email|phone|consultation)\b/i;
   const shouldCaptureLead = leadTriggers.test(userMessage) || leadTriggers.test(answer);
 
@@ -59,5 +82,6 @@ ${contextBlock || 'No relevant context found.'}`;
     answer,
     sources,
     should_capture_lead: shouldCaptureLead,
+    intent,
   };
 }

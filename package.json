@@ -6,6 +6,12 @@
     "install": "cd backend && npm install",
     "start": "cd backend && npm start",
     "dev": "cd backend && npm run dev",
-    "build": "cd backend && npm install"
+    "build": "cd backend && npm install",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0"
   }
 }

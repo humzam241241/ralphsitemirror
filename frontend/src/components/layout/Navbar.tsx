@@ -8,6 +8,7 @@ const navLinks = [
   { label: 'FAQ', to: '/#faq' },
   { label: 'Testimonials', to: '/#testimonials' },
   { label: 'Contact', to: '/#contact' },
+  { label: 'Showcase', to: '/showcase' },
 ]
 
 export default function Navbar() {

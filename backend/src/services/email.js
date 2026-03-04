@@ -6,10 +6,40 @@ import { dirname, join } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+const EMAIL_PROVIDERS = {
+  gmail: {
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false,
+  },
+  outlook: {
+    host: 'smtp-mail.outlook.com',
+    port: 587,
+    secure: false,
+  },
+  office365: {
+    host: 'smtp.office365.com',
+    port: 587,
+    secure: false,
+  },
+};
+
+function getEmailProvider() {
+  const provider = (process.env.EMAIL_PROVIDER || 'gmail').toLowerCase();
+  
+  if (!EMAIL_PROVIDERS[provider]) {
+    console.warn(`⚠️  Unknown EMAIL_PROVIDER "${provider}", falling back to Gmail`);
+    return EMAIL_PROVIDERS.gmail;
+  }
+  
+  return EMAIL_PROVIDERS[provider];
+}
+
+const providerConfig = getEmailProvider();
+console.log(`📧 Using email provider: ${process.env.EMAIL_PROVIDER || 'gmail'}`);
+
 const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false,
+  ...providerConfig,
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_APP_PASSWORD,

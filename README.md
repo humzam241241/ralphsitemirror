@@ -8,7 +8,7 @@ Production-ready multi-tenant AI chatbot platform with RAG-powered conversations
 - Node.js 18+
 - Supabase account (PostgreSQL + pgvector)
 - OpenAI API key
-- Gmail account for SMTP
+- Email account (Gmail or Outlook/Office 365)
 
 ### Local Development
 
@@ -117,9 +117,11 @@ OPENAI_API_KEY=sk-proj-...
 # Authentication
 ADMIN_SECRET=your-secret-min-32-chars
 
-# Email (Gmail SMTP)
+# Email Configuration
+# Supported providers: gmail, outlook, office365
+EMAIL_PROVIDER=gmail
 SMTP_USER=your-email@gmail.com
-SMTP_APP_PASSWORD=your-gmail-app-password
+SMTP_APP_PASSWORD=your-app-password
 NOTIFICATION_EMAIL=info@ryansroofing.ca
 
 # Cal.com Integration
@@ -152,15 +154,43 @@ VITE_API_URL=http://localhost:8000
 3. Copy the key (starts with `sk-proj-`)
 4. Add to `backend/.env` as `OPENAI_API_KEY`
 
-### 2. Gmail SMTP (App Password)
+### 2. Email Configuration (Gmail or Outlook)
+
+#### Option A: Gmail SMTP (Recommended for personal use)
 1. Enable 2FA on your Google account
 2. Go to https://myaccount.google.com/apppasswords
 3. Select "Mail" and "Other (Custom name)"
 4. Name it "Ryan's Roofing Platform"
 5. Copy the 16-character password
 6. Add to `backend/.env`:
-   - `SMTP_USER=your-email@gmail.com`
-   - `SMTP_APP_PASSWORD=the-16-char-password`
+   ```bash
+   EMAIL_PROVIDER=gmail
+   SMTP_USER=your-email@gmail.com
+   SMTP_APP_PASSWORD=the-16-char-password
+   NOTIFICATION_EMAIL=your-email@gmail.com
+   ```
+
+#### Option B: Outlook/Office 365 SMTP (Recommended for business)
+1. Ensure your Outlook account has 2FA enabled (Microsoft Account Security)
+2. Go to https://account.microsoft.com/security
+3. Select "Advanced security options"
+4. Under "App passwords", create a new app password
+5. Name it "Ryan's Roofing Platform"
+6. Copy the generated password
+7. Add to `backend/.env`:
+   ```bash
+   EMAIL_PROVIDER=outlook
+   SMTP_USER=your-email@outlook.com
+   SMTP_APP_PASSWORD=the-app-password
+   NOTIFICATION_EMAIL=your-email@outlook.com
+   ```
+   
+**Note**: For Office 365 business accounts, use `EMAIL_PROVIDER=office365` instead. The setup is the same, but the SMTP server is different.
+
+**Supported Email Providers**:
+- `gmail` - Gmail (smtp.gmail.com)
+- `outlook` - Outlook.com (smtp-mail.outlook.com)
+- `office365` - Office 365 business (smtp.office365.com)
 
 ### 3. Supabase Database
 1. Sign up at https://supabase.com

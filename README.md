@@ -94,7 +94,7 @@ npm run dev
 - **Shadow DOM Widget**: Isolated, embeddable chat with zero CSS conflicts
 
 ### Sprint 5-6 Additions
-- **📧 Email Notifications**: Gmail SMTP with professional HTML templates
+- **📧 Email Notifications**: Gmail/Outlook/Office 365 SMTP with professional HTML templates
 - **📅 Booking System**: Cal.com integration with appointment scheduling
 - **🚨 Emergency Detection**: AI-powered intent detection for urgent requests
 - **📝 Contact Forms**: Integrated with backend API and notifications
@@ -282,6 +282,7 @@ npm run lighthouse
 
 ## 📚 Documentation
 
+- **Email Setup**: Step-by-step guide for Gmail, Outlook, and Office 365 (`docs/EMAIL_SETUP.md`)
 - **Architecture**: Complete system design and data flows
 - **API Reference**: All endpoints documented inline in route files
 - **Production Setup**: Deployment checklist and environment configuration
@@ -300,9 +301,13 @@ npm run lighthouse
 - Run schema.sql if tables don't exist
 
 **Email not sending?**
-- Verify Gmail app password (not regular password)
+- Verify you're using an app password (not your regular account password)
+- For Gmail: Check https://myaccount.google.com/apppasswords
+- For Outlook: Check https://account.microsoft.com/security
+- Ensure `EMAIL_PROVIDER` is set correctly (gmail, outlook, or office365)
 - Check SMTP settings in backend/.env
-- Test with a simple script first
+- Test connection with: `npm run test:email` (if available)
+- Check server logs for detailed error messages
 
 **Build errors?**
 - Clear `node_modules` and reinstall: `rm -rf node_modules && npm install`

@@ -8,6 +8,7 @@ const required = [
 ];
 
 const optional = [
+  'EMAIL_PROVIDER',
   'CAL_COM_API_KEY',
   'CAL_COM_EVENT_TYPE_ID',
   'ALLOWED_ORIGINS',
@@ -41,6 +42,12 @@ export function validateEnv() {
 
   if (process.env.ADMIN_SECRET && process.env.ADMIN_SECRET.length < 20) {
     warnings.push('ADMIN_SECRET should be at least 20 characters for security');
+  }
+
+  const validProviders = ['gmail', 'outlook', 'office365'];
+  const emailProvider = (process.env.EMAIL_PROVIDER || 'gmail').toLowerCase();
+  if (!validProviders.includes(emailProvider)) {
+    warnings.push(`EMAIL_PROVIDER "${process.env.EMAIL_PROVIDER}" is not valid. Supported: ${validProviders.join(', ')}. Defaulting to gmail.`);
   }
 
   if (warnings.length > 0) {

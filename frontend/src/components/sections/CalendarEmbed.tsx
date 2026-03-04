@@ -4,14 +4,7 @@ import { useEffect } from 'react'
 
 interface CalendarEmbedProps {
   calLink?: string
-  config?: {
-    theme?: 'light' | 'dark' | 'auto'
-    styles?: {
-      branding?: {
-        brandColor?: string
-      }
-    }
-  }
+  config?: Record<string, any>
 }
 
 export default function CalendarEmbed({ 
@@ -91,7 +84,7 @@ export default function CalendarEmbed({
             <div className="p-6">
               <Cal
                 calLink={calLink}
-                config={config}
+                config={config as any}
                 style={{ width: '100%', height: '600px', overflow: 'scroll' }}
               />
             </div>

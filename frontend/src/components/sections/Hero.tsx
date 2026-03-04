@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom'
 import { useRaffy } from '../../contexts/RaffyContext'
 
 export default function Hero() {

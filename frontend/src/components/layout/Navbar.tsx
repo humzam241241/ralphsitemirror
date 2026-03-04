@@ -2,37 +2,29 @@ import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 
 const navLinks = [
-  { label: 'Home', to: '/', section: null },
-  { label: 'About', to: '/#about', section: 'about' },
-  { label: 'Services', to: '/#services', section: 'services' },
-  { label: 'FAQ', to: '/#faq', section: 'faq' },
-  { label: 'Testimonials', to: '/#testimonials', section: 'testimonials' },
-  { label: 'Contact', to: '/#contact', section: 'contact' },
-  { label: 'Showcase', to: '/showcase', section: null },
+  { label: 'Home', to: '/' },
+  { label: 'About', to: '/about' },
+  { label: 'Services', to: '/services' },
+  { label: 'FAQ', to: '/faq' },
+  { label: 'Testimonials', to: '/testimonials' },
+  { label: 'Contact', to: '/contact' },
 ]
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const location = useLocation()
 
-  const handleNavClick = (section: string | null) => {
+  const handleNavClick = () => {
     setMobileMenuOpen(false)
-    
-    if (section && location.pathname === '/') {
-      setTimeout(() => {
-        const element = document.getElementById(section)
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'start' })
-        }
-      }, 100)
-    }
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   return (
-    <nav className="sticky top-0 z-50 w-full bg-dark shadow-md">
+    <nav className="sticky top-0 z-50 w-full border-b border-white/10 bg-black/80 backdrop-blur-md shadow-lg">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
         <Link
           to="/"
+          onClick={handleNavClick}
           className="text-xl font-bold tracking-tight text-white transition-colors hover:text-gold"
         >
           Ryan's Roofing
@@ -44,8 +36,10 @@ export default function Navbar() {
             <Link
               key={link.label}
               to={link.to}
-              onClick={() => handleNavClick(link.section)}
-              className="text-sm font-medium text-white/90 transition-colors hover:text-gold"
+              onClick={handleNavClick}
+              className={`text-sm font-medium transition-colors hover:text-gold ${
+                location.pathname === link.to ? 'text-gold' : 'text-white/90'
+              }`}
             >
               {link.label}
             </Link>
@@ -97,7 +91,7 @@ export default function Navbar() {
 
       {/* Mobile slide-in menu panel */}
       <div
-        className={`fixed right-0 top-[57px] z-50 w-72 max-w-[85vw] bg-dark shadow-xl transition-transform duration-300 ease-in-out md:hidden ${
+        className={`fixed right-0 top-[57px] z-50 w-72 max-w-[85vw] border-l border-white/10 bg-black/95 backdrop-blur-lg shadow-xl transition-transform duration-300 ease-in-out md:hidden ${
           mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
@@ -106,8 +100,10 @@ export default function Navbar() {
             <Link
               key={link.label}
               to={link.to}
-              onClick={() => handleNavClick(link.section)}
-              className="rounded-lg px-4 py-3 text-base font-medium text-white/90 transition-colors hover:bg-white/10 hover:text-gold"
+              onClick={handleNavClick}
+              className={`rounded-lg px-4 py-3 text-base font-medium transition-colors hover:bg-white/10 hover:text-gold ${
+                location.pathname === link.to ? 'bg-gold/10 text-gold' : 'text-white/90'
+              }`}
             >
               {link.label}
             </Link>

@@ -2,15 +2,15 @@ import { Link } from 'react-router-dom'
 
 const quickLinks = [
   { label: 'Home', to: '/' },
-  { label: 'About', to: '/#about' },
-  { label: 'Services', to: '/#services' },
-  { label: 'FAQ', to: '/#faq' },
-  { label: 'Contact', to: '/#contact' },
+  { label: 'About', to: '/about' },
+  { label: 'Services', to: '/services' },
+  { label: 'FAQ', to: '/faq' },
+  { label: 'Contact', to: '/contact' },
 ]
 
 export default function Footer() {
   return (
-    <footer className="bg-dark text-white">
+    <footer className="border-t border-white/10 bg-black/95 text-white backdrop-blur-md">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
           {/* Company info */}

@@ -1,6 +1,7 @@
 import express from 'express';
 import validator from 'validator';
 import { sendContactEmail } from '../services/email.js';
+import { sendContactSMS } from '../services/sms.js';
 import pool from '../config/database.js';
 import { contactFormLimiter } from '../middleware/rateLimiter.js';
 import { sanitizeContactInput } from '../middleware/sanitize.js';
@@ -32,6 +33,7 @@ router.post('/', contactFormLimiter, sanitizeContactInput, async (req, res) => {
     console.log('📝 Processing contact form submission:', { 
       name: sanitizedData.name, 
       email: sanitizedData.email,
+      phone: sanitizedData.phone,
       service: sanitizedData.service 
     });
 
@@ -52,11 +54,22 @@ router.post('/', contactFormLimiter, sanitizeContactInput, async (req, res) => {
 
     console.log('✅ Lead saved to database with ID:', result.rows[0].id);
 
+    // Send email notification
     try {
       await sendContactEmail(sanitizedData);
       console.log('✅ Contact emails sent successfully');
     } catch (emailError) {
       console.error('⚠️  Email sending failed, but lead was saved:', emailError.message);
+    }
+
+    // Send SMS notification if phone number provided
+    if (sanitizedData.phone) {
+      try {
+        await sendContactSMS(sanitizedData);
+        console.log('✅ Contact SMS sent successfully');
+      } catch (smsError) {
+        console.error('⚠️  SMS sending failed, but lead was saved:', smsError.message);
+      }
     }
 
     res.json({ 

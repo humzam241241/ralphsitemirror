@@ -156,7 +156,7 @@ export default function ContactPage() {
                   <div className="grid gap-6 sm:grid-cols-2">
                     <div>
                       <label htmlFor="phone" className="block text-sm font-medium text-white">
-                        Phone *
+                        Phone * <span className="text-xs text-white/50">(for SMS updates)</span>
                       </label>
                       <input
                         id="phone"
@@ -165,6 +165,9 @@ export default function ContactPage() {
                         required
                         className="mt-1 w-full rounded-lg border border-white/20 bg-white/5 px-4 py-3 text-white placeholder-white/50 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
                       />
+                      <p className="mt-1 text-xs text-white/50">
+                        📱 We'll send you SMS updates about your service request
+                      </p>
                     </div>
                     <div>
                       <label htmlFor="service" className="block text-sm font-medium text-white">

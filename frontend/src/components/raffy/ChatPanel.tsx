@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect } from 'react'
 import ChatMessage from './ChatMessage'
 import { useChat } from '../../hooks/useChat'
+import CalendarEmbed from '../sections/CalendarEmbed'
 import type { Message } from '../../hooks/useChat'
+import { Maximize2, Minimize2 } from 'lucide-react'
 
 const INTRO_MESSAGE: Message = {
   id: 'intro',
@@ -19,6 +21,8 @@ interface ChatPanelProps {
 export default function ChatPanel({ onClose }: ChatPanelProps) {
   const { messages, sendMessage, canSend, maxMessages } = useChat()
   const [inputValue, setInputValue] = useState('')
+  const [isExpanded, setIsExpanded] = useState(false)
+  const [showBooking, setShowBooking] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const displayMessages = [INTRO_MESSAGE, ...messages]
@@ -36,79 +40,121 @@ export default function ChatPanel({ onClose }: ChatPanelProps) {
 
   const handleQuickReply = (text: string) => {
     if (!canSend) return
+    
+    // If "Book Inspection" is clicked, show booking calendar
+    if (text === 'Book Inspection') {
+      setShowBooking(true)
+      setIsExpanded(true)
+      return
+    }
+    
     sendMessage(text)
   }
 
+  const panelWidth = isExpanded ? 'w-[90vw] max-w-4xl' : 'w-[360px]'
+  const panelHeight = isExpanded ? 'h-[85vh]' : 'h-[420px]'
+
   return (
-    <div className="flex h-[420px] w-[360px] flex-col overflow-hidden rounded-t-2xl border border-dark/10 bg-white shadow-2xl">
+    <div className={`flex ${panelHeight} ${panelWidth} flex-col overflow-hidden rounded-t-2xl border border-dark/10 bg-white shadow-2xl transition-all duration-300`}>
       {/* Header */}
       <div className="flex items-center justify-between border-b border-dark/10 bg-dark px-4 py-3">
-        <h2 className="text-base font-semibold text-gold">Raffy - AI Assistant</h2>
-        <button
-          type="button"
-          onClick={onClose}
-          className="rounded-full p-1.5 text-white/80 transition-colors hover:bg-white/10 hover:text-white"
-          aria-label="Close chat"
-        >
-          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
-
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {displayMessages.map((msg) => (
-          <ChatMessage
-            key={msg.id}
-            sender={msg.sender}
-            text={msg.text}
-            timestamp={msg.timestamp}
-          />
-        ))}
-        <div ref={messagesEndRef} />
-      </div>
-
-      {/* Quick reply chips */}
-      <div className="flex flex-wrap gap-2 px-4 pb-2">
-        {QUICK_REPLIES.map((label) => (
+        <h2 className="text-base font-semibold text-gold">
+          {showBooking ? 'Book Your Inspection' : 'Raffy - AI Assistant'}
+        </h2>
+        <div className="flex items-center gap-2">
           <button
-            key={label}
             type="button"
-            onClick={() => handleQuickReply(label)}
-            disabled={!canSend}
-            className="rounded-full border border-gold bg-gold/10 px-3 py-1.5 text-xs font-medium text-dark transition-colors hover:bg-gold/20 disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="rounded-full p-1.5 text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+            aria-label={isExpanded ? "Minimize" : "Expand"}
           >
-            {label}
+            {isExpanded ? (
+              <Minimize2 className="h-5 w-5" />
+            ) : (
+              <Maximize2 className="h-5 w-5" />
+            )}
           </button>
-        ))}
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full p-1.5 text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+            aria-label="Close chat"
+          >
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
       </div>
 
-      {/* Input */}
-      <div className="flex gap-2 border-t border-dark/10 p-3">
-        <input
-          type="text"
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-          placeholder="Type your message..."
-          disabled={!canSend}
-          className="flex-1 rounded-lg border border-dark/20 px-3 py-2 text-sm outline-none transition-colors focus:border-gold focus:ring-1 focus:ring-gold disabled:opacity-50"
-        />
-        <button
-          type="button"
-          onClick={handleSend}
-          disabled={!inputValue.trim() || !canSend}
-          className="rounded-lg bg-gold px-4 py-2 text-sm font-medium text-dark transition-colors hover:bg-gold-hover disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Send
-        </button>
-      </div>
+      {/* Content Area */}
+      {showBooking ? (
+        <div className="flex-1 overflow-y-auto p-6">
+          <button
+            onClick={() => setShowBooking(false)}
+            className="mb-4 text-sm text-dark/60 hover:text-dark"
+          >
+            ← Back to chat
+          </button>
+          <CalendarEmbed />
+        </div>
+      ) : (
+        <>
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {displayMessages.map((msg) => (
+              <ChatMessage
+                key={msg.id}
+                sender={msg.sender}
+                text={msg.text}
+                timestamp={msg.timestamp}
+              />
+            ))}
+            <div ref={messagesEndRef} />
+          </div>
 
-      {!canSend && (
-        <p className="px-4 pb-2 text-center text-xs text-dark/50">
-          Message limit reached ({maxMessages}). Refresh to continue.
-        </p>
+          {/* Quick reply chips */}
+          <div className="flex flex-wrap gap-2 px-4 pb-2">
+            {QUICK_REPLIES.map((label) => (
+              <button
+                key={label}
+                type="button"
+                onClick={() => handleQuickReply(label)}
+                disabled={!canSend}
+                className="rounded-full border border-gold bg-gold/10 px-3 py-1.5 text-xs font-medium text-dark transition-colors hover:bg-gold/20 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {/* Input */}
+          <div className="flex gap-2 border-t border-dark/10 p-3">
+            <input
+              type="text"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+              placeholder="Type your message..."
+              disabled={!canSend}
+              className="flex-1 rounded-lg border border-dark/20 px-3 py-2 text-sm outline-none transition-colors focus:border-gold focus:ring-1 focus:ring-gold disabled:opacity-50"
+            />
+            <button
+              type="button"
+              onClick={handleSend}
+              disabled={!inputValue.trim() || !canSend}
+              className="rounded-lg bg-gold px-4 py-2 text-sm font-medium text-dark transition-colors hover:bg-gold-hover disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Send
+            </button>
+          </div>
+
+          {!canSend && (
+            <p className="px-4 pb-2 text-center text-xs text-dark/50">
+              Message limit reached ({maxMessages}). Refresh to continue.
+            </p>
+          )}
+        </>
       )}
     </div>
   )

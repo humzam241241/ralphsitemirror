@@ -1,6 +1,16 @@
 import { Link } from 'react-router-dom'
+import { useRaffy } from '../../contexts/RaffyContext'
 
 export default function Hero() {
+  const { openRaffy } = useRaffy()
+
+  const scrollToContact = () => {
+    const contactSection = document.getElementById('contact')
+    if (contactSection) {
+      contactSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
+
   return (
     <section
       id="hero"
@@ -26,19 +36,40 @@ export default function Hero() {
           AI-powered inspections and estimates. Serving Durham Region with
           accuracy you can trust.
         </p>
+        
+        {/* Prominent CTA Buttons */}
         <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <Link
-            to="/#contact"
-            className="inline-flex w-full items-center justify-center rounded-lg bg-gold px-8 py-4 text-base font-semibold text-dark transition-colors hover:bg-gold-hover sm:w-auto"
+          <button
+            onClick={scrollToContact}
+            className="inline-flex w-full items-center justify-center rounded-lg bg-gold px-10 py-5 text-lg font-bold text-dark shadow-xl transition-all hover:scale-105 hover:bg-gold-hover hover:shadow-2xl sm:w-auto"
           >
-            Get a Free Estimate
-          </Link>
-          <Link
-            to="/#about"
-            className="inline-flex w-full items-center justify-center rounded-lg border-2 border-gold px-8 py-4 text-base font-semibold text-gold transition-colors hover:bg-gold/10 sm:w-auto"
+            📞 Get Free Estimate
+          </button>
+          <button
+            onClick={openRaffy}
+            className="inline-flex w-full items-center justify-center rounded-lg border-2 border-gold bg-dark/50 px-10 py-5 text-lg font-bold text-gold shadow-xl transition-all hover:scale-105 hover:bg-gold/10 hover:shadow-2xl sm:w-auto"
           >
-            Meet Raffy
-          </Link>
+            💬 Meet Raffy (AI Assistant)
+          </button>
+        </div>
+
+        {/* Quick Contact Info */}
+        <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+          <a
+            href="tel:+19055551234"
+            className="flex items-center gap-2 text-white/80 transition-colors hover:text-gold"
+          >
+            <span className="text-xl">📱</span>
+            <span className="font-semibold">(905) 555-1234</span>
+          </a>
+          <span className="hidden text-white/50 sm:inline">•</span>
+          <a
+            href="mailto:info@ryansroofing.ca"
+            className="flex items-center gap-2 text-white/80 transition-colors hover:text-gold"
+          >
+            <span className="text-xl">✉️</span>
+            <span className="font-semibold">info@ryansroofing.ca</span>
+          </a>
         </div>
       </div>
     </section>

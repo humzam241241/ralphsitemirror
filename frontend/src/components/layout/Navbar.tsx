@@ -1,20 +1,32 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 
 const navLinks = [
-  { label: 'Home', to: '/' },
-  { label: 'About', to: '/#about' },
-  { label: 'Services', to: '/#services' },
-  { label: 'FAQ', to: '/#faq' },
-  { label: 'Testimonials', to: '/#testimonials' },
-  { label: 'Contact', to: '/#contact' },
-  { label: 'Showcase', to: '/showcase' },
+  { label: 'Home', to: '/', section: null },
+  { label: 'About', to: '/#about', section: 'about' },
+  { label: 'Services', to: '/#services', section: 'services' },
+  { label: 'FAQ', to: '/#faq', section: 'faq' },
+  { label: 'Testimonials', to: '/#testimonials', section: 'testimonials' },
+  { label: 'Contact', to: '/#contact', section: 'contact' },
+  { label: 'Showcase', to: '/showcase', section: null },
 ]
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const location = useLocation()
 
-  const handleNavClick = () => setMobileMenuOpen(false)
+  const handleNavClick = (section: string | null) => {
+    setMobileMenuOpen(false)
+    
+    if (section && location.pathname === '/') {
+      setTimeout(() => {
+        const element = document.getElementById(section)
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+      }, 100)
+    }
+  }
 
   return (
     <nav className="sticky top-0 z-50 w-full bg-dark shadow-md">
@@ -32,6 +44,7 @@ export default function Navbar() {
             <Link
               key={link.label}
               to={link.to}
+              onClick={() => handleNavClick(link.section)}
               className="text-sm font-medium text-white/90 transition-colors hover:text-gold"
             >
               {link.label}
@@ -93,7 +106,7 @@ export default function Navbar() {
             <Link
               key={link.label}
               to={link.to}
-              onClick={handleNavClick}
+              onClick={() => handleNavClick(link.section)}
               className="rounded-lg px-4 py-3 text-base font-medium text-white/90 transition-colors hover:bg-white/10 hover:text-gold"
             >
               {link.label}

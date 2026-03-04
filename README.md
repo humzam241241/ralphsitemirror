@@ -253,6 +253,10 @@ npm run test:e2e              # Run all tests
 npm run test:e2e:ui           # Run with UI
 npm run test:e2e:report       # View report
 
+# Email Configuration Test
+cd backend
+npm run test:email            # Verify SMTP connection
+
 # Lighthouse Performance
 cd frontend
 npm run lighthouse
@@ -283,6 +287,8 @@ npm run lighthouse
 ## 📚 Documentation
 
 - **Email Setup**: Step-by-step guide for Gmail, Outlook, and Office 365 (`docs/EMAIL_SETUP.md`)
+- **Email Provider Comparison**: Help choosing the right provider (`docs/EMAIL_PROVIDER_COMPARISON.md`)
+- **Email Migration**: Guide for switching between providers (`docs/EMAIL_MIGRATION.md`)
 - **Architecture**: Complete system design and data flows
 - **API Reference**: All endpoints documented inline in route files
 - **Production Setup**: Deployment checklist and environment configuration

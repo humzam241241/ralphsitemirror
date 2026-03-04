@@ -19,7 +19,7 @@ validateEnv();
 verifyConnection();
 
 const app = express();
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 10000;
 const isDev = process.env.NODE_ENV !== 'production';
 
 app.set('trust proxy', 1);
@@ -82,7 +82,7 @@ app.use((err, _req, res, _next) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT} (${isDev ? 'development' : 'production'})`);
+  console.log(`Server running on port ${PORT} (${process.env.NODE_ENV || "development"})`);
 });
 
 export default app;

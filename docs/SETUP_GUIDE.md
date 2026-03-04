@@ -6,7 +6,7 @@ Complete guide for configuring all environment variables and obtaining necessary
 
 | Service | File Location | Keys Needed |
 |---------|---------------|-------------|
-| Backend | `backend/.env` | Database, OpenAI, Gmail, Cal.com |
+| Backend | `backend/.env` | Database, OpenAI, Email (Gmail/Outlook), Cal.com |
 | Admin | `admin/.env.local` | Admin secret, API URLs |
 | Frontend | `frontend/.env` | API URL (optional) |
 | Widget | N/A | Configured via script tag |
@@ -34,10 +34,12 @@ OPENAI_API_KEY=sk-proj-...
 ADMIN_SECRET=your-secret-min-32-characters
 
 # ============================================
-# EMAIL NOTIFICATIONS (Gmail SMTP)
+# EMAIL NOTIFICATIONS
 # ============================================
+# Supported providers: gmail, outlook, office365
+EMAIL_PROVIDER=gmail
 SMTP_USER=your-email@gmail.com
-SMTP_APP_PASSWORD=your-16-char-app-password
+SMTP_APP_PASSWORD=your-app-password
 NOTIFICATION_EMAIL=info@ryansroofing.ca
 
 # ============================================
@@ -82,9 +84,13 @@ OPENAI_API_KEY=sk-proj-xxxxxxxxxxxxxxxxxxxxx
 
 ---
 
-### 2️⃣ Gmail SMTP (App Password)
+### 2️⃣ Email Configuration (Gmail or Outlook)
 
 **Purpose**: Send email notifications for leads, contacts, and bookings
+
+**Supported Providers**: Gmail, Outlook.com, Office 365
+
+#### Quick Setup - Gmail (Recommended for Personal Use)
 
 **Prerequisites**: 
 - Gmail account with 2-Factor Authentication enabled
@@ -104,15 +110,45 @@ OPENAI_API_KEY=sk-proj-xxxxxxxxxxxxxxxxxxxxx
 
 **Add to backend/.env**:
 ```bash
+EMAIL_PROVIDER=gmail
 SMTP_USER=your-email@gmail.com
 SMTP_APP_PASSWORD=abcdefghijklmnop
 NOTIFICATION_EMAIL=info@ryansroofing.ca
 ```
 
+#### Quick Setup - Outlook (Recommended for Business Use)
+
+**Prerequisites**: 
+- Outlook.com or Office 365 account with 2FA enabled
+
+**Steps**:
+1. Enable 2FA on your Microsoft account:
+   - Go to https://account.microsoft.com/security
+   - Click "Advanced security options"
+   - Turn on "Two-step verification"
+
+2. Generate App Password:
+   - Go to https://account.microsoft.com/security
+   - Under "App passwords", create new app password
+   - Name it: "Ryan's Roofing Platform"
+   - Copy the generated password
+
+**Add to backend/.env**:
+```bash
+EMAIL_PROVIDER=outlook
+SMTP_USER=your-email@outlook.com
+SMTP_APP_PASSWORD=your-app-password
+NOTIFICATION_EMAIL=info@outlook.com
+```
+
+**For Office 365 Business**: Use `EMAIL_PROVIDER=office365` instead.
+
 **⚠️ Important**:
-- Use the app password, NOT your regular Gmail password
-- Remove spaces from the 16-character password
-- Test with a simple email first
+- Use the app password, NOT your regular email password
+- Remove spaces from the app password
+- Test connection with: `cd backend && npm run test:email`
+
+📚 **For detailed setup instructions, troubleshooting, and provider-specific guides, see `docs/EMAIL_SETUP.md`**
 
 ---
 
@@ -289,8 +325,12 @@ After setting up all environment variables:
 
 ### "SMTP Connection Failed"
 - Use app password, NOT regular password
-- Verify 2FA is enabled on Gmail
+- For Gmail: Verify 2FA is enabled at https://myaccount.google.com/security
+- For Outlook: Verify 2FA is enabled at https://account.microsoft.com/security
+- Check `EMAIL_PROVIDER` is set correctly (gmail, outlook, or office365)
+- Test with: `cd backend && npm run test:email`
 - Check firewall isn't blocking port 587
+- See `docs/EMAIL_SETUP.md` for detailed troubleshooting
 
 ### "Database Connection Refused"
 - Check DATABASE_URL format

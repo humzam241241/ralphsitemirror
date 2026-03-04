@@ -59,12 +59,32 @@ export default function Contact() {
       className="bg-light-bg px-4 py-20 sm:px-6 lg:px-8"
     >
       <div className="mx-auto max-w-6xl">
-        <h2 className="mb-4 text-center text-3xl font-bold tracking-tight text-dark sm:text-4xl">
-          Get a Free Estimate
-        </h2>
-        <p className="mx-auto mb-8 max-w-2xl text-center text-lg text-dark-3">
-          Fill out the form below and we'll get back to you within 24 hours.
-        </p>
+        {/* Prominent Header with Contact Options */}
+        <div className="mb-12 text-center">
+          <h2 className="mb-4 text-3xl font-bold tracking-tight text-dark sm:text-4xl">
+            Get a Free Estimate
+          </h2>
+          <p className="mx-auto mb-8 max-w-2xl text-lg text-dark-3">
+            Fill out the form below and we'll get back to you within 24 hours.
+          </p>
+          
+          {/* Quick Contact Buttons */}
+          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <a
+              href="tel:+19055551234"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-brand-blue px-8 py-4 text-lg font-bold text-white shadow-lg transition-all hover:scale-105 hover:bg-brand-blue/90 hover:shadow-xl sm:w-auto"
+            >
+              📞 Call Now: (905) 555-1234
+            </a>
+            <a
+              href="mailto:info@ryansroofing.ca"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-lg border-2 border-brand-blue bg-white px-8 py-4 text-lg font-bold text-brand-blue shadow-lg transition-all hover:scale-105 hover:bg-brand-blue/5 hover:shadow-xl sm:w-auto"
+            >
+              ✉️ Email Us
+            </a>
+          </div>
+        </div>
+        
         <div className="mb-12 text-center">
           <CalendarEmbed />
         </div>

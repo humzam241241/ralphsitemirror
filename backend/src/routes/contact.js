@@ -29,6 +29,12 @@ router.post('/', contactFormLimiter, sanitizeContactInput, async (req, res) => {
       message: validator.escape(message.trim()),
     };
 
+    console.log('📝 Processing contact form submission:', { 
+      name: sanitizedData.name, 
+      email: sanitizedData.email,
+      service: sanitizedData.service 
+    });
+
     const result = await pool.query(
       `INSERT INTO leads (
         site_id, name, email, phone, message, source, intent, created_at
@@ -44,7 +50,14 @@ router.post('/', contactFormLimiter, sanitizeContactInput, async (req, res) => {
       ]
     );
 
-    await sendContactEmail(sanitizedData);
+    console.log('✅ Lead saved to database with ID:', result.rows[0].id);
+
+    try {
+      await sendContactEmail(sanitizedData);
+      console.log('✅ Contact emails sent successfully');
+    } catch (emailError) {
+      console.error('⚠️  Email sending failed, but lead was saved:', emailError.message);
+    }
 
     res.json({ 
       success: true, 
@@ -53,9 +66,9 @@ router.post('/', contactFormLimiter, sanitizeContactInput, async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Contact form error:', error);
+    console.error('❌ Contact form error:', error);
     res.status(500).json({ 
-      error: 'Failed to process contact form. Please try again or call us directly.' 
+      error: 'Failed to process contact form. Please try again or call us directly at (905) 555-1234.' 
     });
   }
 });
